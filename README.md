@@ -16,6 +16,9 @@
 
 Давайте рассмотрим некоторые возможности С++11.
 
+## auto
+
+
 ## decltype
 
 
@@ -25,7 +28,7 @@
 ## move semantic
 
 
-## variadic Templates
+## variadic templates
 
 
 ## POD
@@ -37,6 +40,16 @@
 [C++ 11 FAQ](http://sergeyteplyakov.blogspot.com/2012/05/c-11-faq.html)  
 [Десять возможностей C++11, которые должен использовать каждый C++ разработчик](https://habr.com/ru/post/182920/)  
 [C++11. Нововведения](https://ravesli.com/c-11-novovvedeniya/)  
+
+Об auto и decltype:  
+[Placeholder type specifiers (since C++11)](https://en.cppreference.com/w/cpp/language/auto)  
+[decltype specifier](https://en.cppreference.com/w/cpp/language/decltype)  
+[Секреты auto и decltype](https://habr.com/ru/post/206458/)  
+[decltype (C++)](https://docs.microsoft.com/en-us/cpp/cpp/decltype-cpp)  
+[auto (C++)](https://docs.microsoft.com/en-us/cpp/cpp/auto-cpp)  
+[auto](https://sodocumentation.net/cplusplus/topic/2421/auto)  
+[decltype](https://ru.wikipedia.org/wiki/Decltype)  
+[Type Inference in C++ (auto and decltype)](https://www.geeksforgeeks.org/type-inference-in-c-auto-and-decltype/)  
 
 Move-семантика и rvalue:  
 [What is move semantics?](https://stackoverflow.com/questions/3106110/what-is-move-semantics)  
