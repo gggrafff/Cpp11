@@ -24,7 +24,7 @@
 [Десять возможностей C++11, которые должен использовать каждый C++ разработчик](https://habr.com/ru/post/182920/)  
 [C++11. Нововведения](https://ravesli.com/c-11-novovvedeniya/)  
 
-Move-семантика и rvalue:
+Move-семантика и rvalue:  
 [What is move semantics?](https://stackoverflow.com/questions/3106110/what-is-move-semantics)  
 [Семантика перемещения](https://ru.wikipedia.org/wiki/Семантика_перемещения)  
 [Понимание lvalue и rvalue в C и С++](https://habr.com/ru/post/348198/)  
@@ -32,12 +32,12 @@ Move-семантика и rvalue:
 [Идеальная передача и универсальные ссылки в C++](https://habr.com/ru/post/242639/)  
 [C++ std::move and std::forward](https://bajamircea.github.io/coding/cpp/2016/04/07/move-forward.html)  
 
-О variadic templates:
+О variadic templates:  
 [Parameter pack](https://en.cppreference.com/w/cpp/language/parameter_pack)  
 [Variadic templates. Tuples, unpacking and more](https://habr.com/ru/post/228031/)  
 [https://teccxx.neocities.org/mx1/variadic_templates.html](https://teccxx.neocities.org/mx1/variadic_templates.html)  
 
-О POD:
+О POD:  
 [PODType](https://en.cppreference.com/w/cpp/named_req/PODType)  
 [What are POD types in C++?](https://stackoverflow.com/questions/146452/what-are-pod-types-in-c)  
 [Простая структура данных](https://ru.wikipedia.org/wiki/Простая_структура_данных)  
