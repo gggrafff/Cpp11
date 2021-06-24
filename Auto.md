@@ -16,16 +16,170 @@
 Ключевое слово `auto` может применяться в различных контекстах. Рассмотрим подробнее...  
 
 ### Тип переменных
+Ключевое слово auto указывает, что тип объявляемой переменной будет автоматически выводиться из ее инициализатора.  
+Переменная, объявленная с помощью ключевого слова auto, должна быть инициализирована во время ее объявления, иначе возникнет ошибка компиляции (компилятор не сможет вывести тип).  
+Пример:  
+```C++
+auto x = 4;
+auto y = 3.37;
+auto ptr = &x;
+```
 
+Более жизненный пример:  
+```
+std::map<std::string, std::shared_ptr<Widget>> table;
+
+// C++98
+std::map<std::string, std::shared_ptr<Widget>>::iterator i = table.find("42");
+
+// C++11/14/17
+auto j = table.find("42");
+```
+В данном примере `auto` помогает нам не писать сложное название типа.  
+
+Если `auto` используется для объявления нескольких переменных, выведенные типы должны совпадать. Например, объявление `auto i = 0, d = 0.0;` некорректно, а объявление `auto i = 0, *p = &i;` верное и `auto` выводится как `int`. То есть действует простое правило: одно упоминание ключевого слова `auto` заменяется при компиляции только одним названием типа, если его можно вывести.  
+
+**Как выводится тип?**  
+Для вывода типов с `auto` используются те же правила, которые действуют при [выводе типа шаблонов](https://en.cppreference.com/w/cpp/language/template_argument_deduction#Other_contexts) (с одним исключением, которое рассмотрим ниже).  
+
+То есть, при выводе типов в примере:  
+```C++
+auto i = 42;
+```
+работают те же правила, что и при выводе типа для параметра шаблона:  
+```C++
+template<typename T>
+void foo(T i) {}
+
+foo(42);
+```
+
+Это значит, что  
+ * При использовании `auto` теряется ссылочность `&`, а так же теряются квалификаторы `const` и `volatile`.  
+ * Необходимо явно указывать, что мы хотим создать ссылку, const или volatile переменную.  
+ * С указателями всё в порядке: если тип инициализатора T* или const T*, то тип var также будет T* или const T* соответственно.  
+ * Универсальные ссылки работают так же, как у параметров шаблонов. Тип переменной будет зависеть от того какая value category у инициализирующего значения. Если rvalue, то тип var будет T&&, если же lvalue, то T&. Cv квалификаторы при этом сохраняются.  
+
+Объяснить это можно тем, что неявное создание ссылок на объекты могло бы приводить к труднодиагностируемым ошибкам, а если вам всё таки требуется такое поведение, то можно использовать decltype.  
+
+Пример:  
+```C++
+// function that returns a 'reference to int' type
+int& fun() {   }
+
+// m will default to int type instead of
+// int& type
+auto m = fun();
+
+// n will be of int& type because of use of
+// extra & with auto keyword
+auto& n = fun();
+```
+
+Ещё пример:  
+```C++
+const double pi = 3.14;
+
+auto copy_pi = pi;  // изменяемая переменная
+const auto const_copy_pi = pi;  // неизменяемая константа
+const auto& const_ref_pi = pi;  // константная ссылка на pi
+```
+
+Пример с универсальной ссылкой:  
+```C++
+auto&& var = some_expression;  // тип var будет зависеть от того какая value category у some_expression. Если rvalue, то тип var будет T&&, если же lvalue, то T&. Cv квалификаторы при этом сохраняются.
+```
+
+Но есть одна ситуация, в которой auto и параметры шаблона выводятся по-разному - это std::initializer_list:  
+```C++
+auto var = {1, 2, 3};  //  Ok, var будет иметь тип std::initializer_list<int>
+template<typename T> void foo(T t);
+foo({1, 2, 3}); // Не компилируется
+```
+Объяснений такому поведению немного и все они не отличаются внятностью. Скотт Майерс, например, по этому поводу пишет так: “I have no idea why type deduction for auto and for templates is not identical. If you know, please tell me!”.  
 
 ### Функции
+#### Возвращаемое значение
+Появилось в C++14.  
 
+Если возвращаемый функцией тип обозначен как `auto`, то тип будет выведен компилятором из типа выражения, используемого в операторе `return`. Вывод следует правилам вывода аргументов шаблона.  
+```C++
+int x = 1;
+auto f() { return x; }        // return type is int
+const auto& f() { return x; } // return type is const int&
+```
+
+Если есть несколько операторов `return`, все они должны возвращать одинаковый тип.  
+```C++
+auto f(bool val)
+{
+    if (val) return 123; // deduces return type int
+    else return 3.14f;   // error: deduces return type float
+}
+```
+
+С std::initializer_list тип вывести не получится:  
+```C++
+auto func () { return {1, 2, 3}; } // error
+```
+
+Виртуальные функции и корутины не могут использовать `auto` в качестве типа возвращаемого значения:  
+```C++
+struct F
+{
+    virtual auto f() { return 2; } // error
+};
+```
+
+Выводимый тип можно подсказать:  
+```C++
+auto main() -> int {}
+// is equivalent to
+int main() {}
+```
+Это может быть удобно в сочетании с decltype:  
+```C++
+template <typename T1, typename T2>
+auto Add(const T1& lhs, const T2& rhs) -> decltype(foo(lhs)) { return lhs + rhs; }
+```
+
+[Подробнее](https://en.cppreference.com/w/cpp/language/function#Return_type_deduction)  
+
+#### Аргумент функции
+Появилось в C++20.  
+В C++20 с помощью `auto` можно записывать сокращённое объявление шаблона:  
+```C++
+void f1(auto);    // same as template<class T> void f(T)
+void f2(C1 auto); // same as template<C1 T> void f7(T), if C1 is a concept
+```
+[Подробнее](https://en.cppreference.com/w/cpp/language/function#Parameter_list)  
+
+### Range-based for
+Автоматический вывод типов удобно использовать в контексте range-based циклов:  
+```C++
+std::vector<std::string> strings = { "stuff", "things", "misc" };
+for(auto s : strings) {
+    std::cout << s << std::endl;
+}
+```
+А также для обращения к элементам по ссылке:  
+```C++
+for(auto& s : strings) {
+    std::cout << s << std::endl;
+}
+```
+И аналогично с константными ссылками:  
+```C++
+for(const auto& s : strings) {
+    std::cout << s << std::endl;
+}
+```
 
 ### Тип замыкания
 
 
 ### Тип аргументов лямбда-выражения
-
+Появилось в C++14.  
 
 ### Non-type параметры шаблонов
 Новая возможность С++17. Подробнее в [Declaring non-type template arguments with auto](https://github.com/gggrafff/Cpp17-Constexpr-lambda-Fold-expression-Attributes-Type-deduction-Auto-template-parameter/blob/main/AutoTemplateParameters.md).  
