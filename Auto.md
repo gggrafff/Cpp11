@@ -185,7 +185,26 @@ f();
 
 ### Тип аргументов лямбда-выражения
 Появилось в C++14.  
-ToDO
+Начиная с C++14 можно использовать `auto` для типов аргументов лямбда-выражения. Это работает аналогично тому, как работает `auto` для аргументов функции в C++20: в создаваемом замыкании оператор `operator()` становится шаблоном и может быть инстанцирован для разных типов данных.  
+```C++
+// generic lambda, operator() is a template with two parameters
+auto glambda = [](auto a, auto&& b) { return a < b; };
+bool b = glambda(3, 3.14); // ok
+ 
+// generic lambda, operator() is a template with one parameter
+auto vglambda = [](auto printer) {
+    return [=](auto&&... ts) // generic lambda, ts is a parameter pack
+    { 
+        printer(std::forward<decltype(ts)>(ts)...);
+        return [=] { printer(ts...); }; // nullary lambda (takes no parameters)
+    };
+};
+auto p = vglambda([](auto v1, auto v2, auto v3) { std::cout << v1 << v2 << v3; });
+auto q = p(1, 'a', 3.14); // outputs 1a3.14
+q();                      // outputs 1a3.14
+```
+Это позволяет вызывать замыкание для разных типов параметров, а так же позволяет не писать длинные и сложные названия типов.  
+[Подробнее](https://en.cppreference.com/w/cpp/language/lambda)  
 
 ### Non-type параметры шаблонов
 Новая возможность С++17. Подробнее в [Declaring non-type template arguments with auto](https://github.com/gggrafff/Cpp17-Constexpr-lambda-Fold-expression-Attributes-Type-deduction-Auto-template-parameter/blob/main/AutoTemplateParameters.md).  
