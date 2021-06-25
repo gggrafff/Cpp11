@@ -231,7 +231,55 @@ q();                      // outputs 1a3.14
  * чтобы не повторять тип дважды: `auto w = std::make_shared<Widget>();`  
  * и т.д.  
 
-## Тонкие места
+## Тонкие места и интересные примеры
+
+1. Правила выведения типов для `auto` почти такие же, как для параметров шаблонов, но есть исключение: std::initializer_list выводится по-разному, см. выше.  
+2. 'auto' может помочь избежать ошибок в написании типов, а соотвтетственно избежать ненужных приведений типов и копирований объектов.  
+Например:  
+```C++
+#include <iostream>
+#include <map>
+
+struct Test {
+        Test() = default;
+        Test(const Test &other): a(other.a), b(other.b) {
+            std::cout << "Copy constructor" << std::endl;
+        }
+        int a {0};
+        int b {1};
+    };
+
+int main() {
+    auto myMap = std::map<int,Test>();
+    myMap.emplace(1, Test{});
+    
+    std::cout << "first example: ";
+    std::pair<int, Test> const& firstPair2 = *myMap.begin();  // copy!
+    
+    std::cout << std::endl << std::endl << "second example: ";
+    auto const& firstPair = *myMap.begin();  // no copy!
+}
+```
+Причина лишнего копирования в этом примере в том, что настоящий тип - это `std::pair<const int, Test>`.  
+
+3. Легко допустить ошибки при использовании `auto` с прокси-объектами. Явное указание типа позволило бы выявить ошибку на этапе компиляции или привести тип к нужному. Использование `auto` может повлечь создание объектов, ссылающихся на удалённые данные.  
+Пример:  
+```C++
+std::vector<bool> flags{true, true, false};
+auto flag = flags[0];
+flags.push_back(true);
+```
+Здесь `flag` имеет тип не `bool`, а `std::vector<bool>::reference`, поскольку для `std::vector<bool>` оператор `operator[]` возвращает прокси-объект. Явное указание типа `bool` привело бы к преобразаванию типа и ошибок бы не было. Когда `flags.push_back(true)` изменяет контейнер, может произойти реаллокация, и прокси-объект может начать ссылаться на элемент, который больше не существует.  
+Ещё пример:  
+```C++
+void foo(bool b);
+
+std::vector<bool> getFlags();
+
+auto flag = getFlags()[5];
+foo(flag);
+```
+В этом примере vector является временным объектом и сразу удаляется после присваивания, поэтому вызов `foo` вызывает неопределенное поведение.  
 
 
 ## Упражнения
