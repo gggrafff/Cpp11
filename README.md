@@ -73,6 +73,8 @@ Move-семантика и rvalue:
 [Ссылки r-value](https://ravesli.com/urok-190-ssylki-r-value/)  
 [Идеальная передача и универсальные ссылки в C++](https://habr.com/ru/post/242639/)  
 [C++ std::move and std::forward](https://bajamircea.github.io/coding/cpp/2016/04/07/move-forward.html)  
+[move](https://en.cppreference.com/w/cpp/utility/move)  
+[Value categories](https://en.cppreference.com/w/cpp/language/value_category)  
 
 О variadic templates:  
 [Parameter pack](https://en.cppreference.com/w/cpp/language/parameter_pack)  
