@@ -1,4 +1,4 @@
-# Особенности C++11: decltype, rvalue и lvalue ссылки, move semantic, variadic Templates, POD.
+# Особенности C++11: decltype, rvalue и lvalue ссылки, move semantics, variadic Templates, POD.
 ## Введение
 12 августа 2011 года Международная организация по стандартизации (англ. «ISO») утвердила новую версию языка C++ под названием C++11. Было добавлено много нового функционала.  
 
@@ -37,11 +37,10 @@ decltype(i); // int
 
 [Подробнее](Decltype.md) 
 
-## rvalue и lvalue ссылки
+## move semantics и rvalues
+Семантика перемещения (англ. move semantics) — собирательное название специализированных средств языка программирования C++, которые предназначены для осуществления перемещения данных во время инициализации и конструирования новых объектов, что позволяет сократить издержки на копирование. Для практического осуществления семантики перемещения в синтаксис C++ введены rvalue ссылки, а также конструкторы перемещения и перемещающий оператор присваивания.  
 
-
-## move semantic
-
+[Подробнее](MoveSemantics.md) 
 
 ## variadic templates
 
@@ -75,6 +74,7 @@ Move-семантика и rvalue:
 [C++ std::move and std::forward](https://bajamircea.github.io/coding/cpp/2016/04/07/move-forward.html)  
 [move](https://en.cppreference.com/w/cpp/utility/move)  
 [Value categories](https://en.cppreference.com/w/cpp/language/value_category)  
+[Move Semantics](https://sodocumentation.net/cplusplus/topic/2129/move-semantics)  
 
 О variadic templates:  
 [Parameter pack](https://en.cppreference.com/w/cpp/language/parameter_pack)  
