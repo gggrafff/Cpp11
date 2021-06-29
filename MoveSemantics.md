@@ -402,7 +402,96 @@ constexpr typename remove_reference<T>::type && move(T && arg) noexcept
 Компилятор может самостоятельно перемещать возвращаемые из функции локальные объекты, а так же перемещать временные объекты в функцию в качестве аргумента, даже если синтаксически это записано как передача объекта по значению. В этом случае неявно тоже работает семантика перемещения, но для этого нам не требуется использовать синтаксис перемещения, компилятор всё сделает за нас. То есть мы НЕ должны писать `return std::move(a);` чтобы избежать лишнего вызова конструктора, это произойдёт неявно при записи `return a;`.  
 
 #### std::forward
-ToDo
+Вспомните раздел о forwarding reference.  
+
+std::forward, обычно, применяется, когда находится внутри шаблонной функции с аргументом объявленным как `forwarding reference`, и используется, чтобы восстановить исходную категорию параметра, который был передан в функцию, и передать его дальше по цепочке вызовов (это называется [идеальной передачей](https://habr.com/ru/post/242639/)).  
+
+Вот пример, где используется std::forward:  
+```C++
+struct Y
+{
+  Y(){}
+  Y(const Y &){ std::cout << "Copy constructor\n"; }
+  Y(Y &&){ std::cout << "Move constructor\n"; }
+};
+
+struct X
+{
+  template<typename A, typename B>
+  X(A && a, B && b) :
+    // retrieve the original value category from constructor call
+    // and pass on to member variables
+    a_{ std::forward<A>(a) },
+    b_{ std::forward<B>(b) }
+  {
+  }
+
+  Y a_;
+  Y b_;
+};
+
+template<typename A, typename B>
+X factory(A && a, B && b)
+{
+  // retrieve the original value category from the factory call
+  // and pass on to X constructor
+  return X(std::forward<A>(a), std::forward<B>(b));
+}
+
+int main()
+{
+  Y y;
+  X two = factory(y, Y());
+  // the first argument is a lvalue, eventually a_ will have the
+  // copy constructor called
+  // the second argument is an rvalue, eventually b_ will have the
+  // move constructor called
+}
+
+// prints:
+// Copy constructor
+// Move constructor
+```
+
+std::forward устроен чуть сложнее, чем std::move, но по-прежнему всё, что он делает, - это `static_cast`.  
+
+Вот [возможная реализация](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2010/n3143.html) для std::forward:  
+```C++
+template<typename T> struct is_lvalue_reference { static constexpr bool value = false; };
+template<typename T> struct is_lvalue_reference<T&> { static constexpr bool value = true; };
+
+template<typename T>
+constexpr T&& forward(typename remove_reference<T>::type & arg) noexcept
+{
+  return static_cast<T&&>(arg);
+}
+
+template<typename T>
+constexpr T&& forward(typename remove_reference<T>::type && arg) noexcept
+{
+  static_assert(!is_lvalue_reference<T>::value, "invalid rvalue to lvalue conversion");
+  return static_cast<T&&>(arg);
+}
+```
+
+Из примера мы видим, что тип T не выводится автоматически, поэтому нам пришлось указать его при использовании `std::forward`.  
+
+Кратко о том, что происходит:  
+ * Первая перегрузка `std::forward` пересылает lvalues либо как lvalues, либо как rvalues, в зависимости от типа T  
+ * Вторая перегрузка `std::forward` пересылает rvalues как rvalue и запрещает пересылку rvalue как lvalues  
+
+Рассмотрим первый аргумент `factory(y, Y());`. Он имеет категорию lvalue. Тип `A` выводится как `Y&`. Получем вызов `std::forward<Y&>(Y&)` (первая перегрузка `std::forward`). После инстанцирования шаблона получаем `return static_cast<Y& &&>(arg);`. И, наконец, после сжатия ссылок получаем `return static_cast<Y&>(arg);`. Аналогично для второго аргумента. Конструктор `X(A && a, B && b)` работает похожим образом.  
+
+Более подробно о выводе типов и выборе подходящей перегрузки в этом примере можете почитать [здесь](https://en.cppreference.com/w/cpp/utility/forward).  
+
+Запрет на пересылку rvalues как lvalues нужен, чтобы избежать проблемы с висячими ссылками. Это объясняется более подробно в [N2835](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2009/n2835.html), но суть такова:  
+```C++
+forward<const Y&>(Y()); // does not compile
+// static assert in forward triggers compilation failure for line above
+// with "invalid rvalue to lvalue conversion"
+```
+
+Шаблонную функцию `std::forward` можно рассматривать как некоторую обертку над `static_cast<T&&>(t)`, когда T может принять значение `U&` или `U&&`, в зависимости от типа категории аргумента (lvalue или rvalue). Теперь `factory` является шаблоном, который обрабатывает любые сочетания категорий аргументов.  
 
 ## Где и как это применяется?
 ### Конструкторы перемещения
