@@ -79,7 +79,7 @@ Move-семантика и rvalue:
 О variadic templates:  
 [Parameter pack](https://en.cppreference.com/w/cpp/language/parameter_pack)  
 [Variadic templates. Tuples, unpacking and more](https://habr.com/ru/post/228031/)  
-[https://teccxx.neocities.org/mx1/variadic_templates.html](https://teccxx.neocities.org/mx1/variadic_templates.html)  
+[Variadic templates](https://teccxx.neocities.org/mx1/variadic_templates.html)  
 
 О POD:  
 [PODType](https://en.cppreference.com/w/cpp/named_req/PODType)  
