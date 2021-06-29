@@ -43,10 +43,10 @@ decltype(i); // int
 [Подробнее](MoveSemantics.md) 
 
 ## variadic templates
-
+ToDo
 
 ## POD
-
+ToDo
 
 ## Что почитать?
 О C++11:  
